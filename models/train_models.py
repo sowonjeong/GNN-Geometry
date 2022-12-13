@@ -15,8 +15,8 @@ from models.dgi import DGI
 from models.mvgrl import MVGRL
 from models.grace import GRACE
 from models.baseline_models import GNN
-#from models.cca_ssg import CCA_SSG
-#from models.bgrl import BGRL
+from models.cca_ssg import CCA_SSG
+from models.bgrl import BGRL
 from models.data_augmentation import *
 #from models.clgr import CLGR
 from models.vgnae import *
@@ -350,10 +350,11 @@ def train_grace(data, channels, proj_hid_dim, n_layers=2, tau=0.5,
         #tracker.stop()
         return(model)
 
-
 def train_cca_ssg(data,  hid_dim, channels, lambd=1e-5,
                   n_layers=2, epochs=100, lr=1e-3,
                   fmr=0.2, edr =0.5, name_file="test",
+                  dropout_rate: float = 0.5,gnn_type: str = 'symmetric',
+                  alpha: float=0.5,beta: float=1. ,add_self_loops = True,
                   device=None):
     if device is None:
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -363,8 +364,8 @@ def train_cca_ssg(data,  hid_dim, channels, lambd=1e-5,
     out_dim = channels
     N = data.num_nodes
     ##### Train the SelfGCon model #####
-    print("=== train CCa model model ===")
-    model = CCA_SSG(in_dim, hid_dim, out_dim, n_layers, lambd, N, use_mlp=False) #
+    print("=== train CCA model model ===")
+    model = CCA_SSG(in_dim, hid_dim, out_dim, n_layers, lambd, N, dropout_rate, gnn_type, alpha , beta, add_self_loops, use_mlp=False) #
     model = model.to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=0)
     #tracker = OfflineEmissionsTracker(country_iso_code="US", project_name='CCA-SSG_'+ str(channels) +
@@ -374,8 +375,8 @@ def train_cca_ssg(data,  hid_dim, channels, lambd=1e-5,
     def train_cca_one_epoch(model, data):
         model.train()
         optimizer.zero_grad()
-        new_data1 = random_aug(data, fmr, edr)
-        new_data2 = random_aug(data, fmr, edr)
+        new_data1,_ = random_aug(data, fmr, edr)
+        new_data2,_ = random_aug(data, fmr, edr)
         new_data1 = new_data1.to(device)
         new_data2 = new_data2.to(device)
         z1, z2 = model(new_data1, new_data2)
@@ -395,6 +396,8 @@ def train_bgrl(data, channels, lambd=1e-5,
                   n_layers=2, epochs=100, lr=1e-3,
                   fmr=0.2, edr =0.5, pred_hid=512, wd=1e-5,
                   drf1=0.2, drf2=0.2, dre1=0.4, dre2=0.4, name_file="test",
+                  dropout_rate: float = 0.5,gnn_type: str = 'symmetric',
+                  alpha: float=0.5,beta: float=1. ,add_self_loops = True,
                   device=None):
     if device is None:
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -403,12 +406,12 @@ def train_bgrl(data, channels, lambd=1e-5,
     out_dim = channels
     n_layers = n_layers
 
-    num_class = int(data.y.max().item()) + 1
+    # num_class = int(data.y.max().item()) + 1
     N = data.num_nodes
 
     ##### Train the BGRL model #####
     print("=== train BGRL model ===")
-    model = BGRL(in_dim, hid_dim, out_dim, n_layers, pred_hid)
+    model = BGRL(in_dim, hid_dim, out_dim, n_layers, pred_hid,dropout_rate, gnn_type, alpha , beta, add_self_loops)
     optimizer = torch.optim.AdamW(params=model.parameters(), lr=lr, weight_decay= wd)
     s = lambda epoch: epoch / 1000 if epoch < 1000 \
                     else ( 1 + np.cos((epoch-1000) * np.pi / (epochs - 1000))) * 0.5
@@ -423,8 +426,8 @@ def train_bgrl(data, channels, lambd=1e-5,
     def train_bgrl_one_epoch(model, data):
         model.train()
         optimizer.zero_grad()
-        new_data1 = random_aug(data, drf1, dre1)
-        new_data2 = random_aug(data, drf2, dre2)
+        new_data1,_ = random_aug(data, drf1, dre1)
+        new_data2,_ = random_aug(data, drf2, dre2)
 
         z1, z2, loss = model(new_data1, new_data2)
 

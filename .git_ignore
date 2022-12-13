@@ -1,5 +1,8 @@
 .DS_Store/
 .ipynb_checkpoints/
+.vscode/
+.idea
+__pycache__/
 simulation_utils.zip
 
 # trained data

@@ -19,7 +19,7 @@ def random_aug(data, feat_drop_rate, edge_mask_rate):
     nwgt = wgt[edge_mask]
 
     new_data.edge_index = torch.vstack([nsrc, ndst])
-    new_data.x = feat
+    new_data.x = feat.to(dtype=torch.float32)
     new_data.edge_weight = nwgt  #drop edge_weight too
 
     return new_data, edge_mask;

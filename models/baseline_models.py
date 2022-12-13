@@ -38,7 +38,7 @@ class GCN(nn.Module):
         for i in range(self.n_layers - 1):
             x = F.relu(self.convs[i](x, edge_index, edge_weight)) # nn.PReLU
             x = F.dropout(x, p = self.p)
-        x = self.convs[-1](x, edge_index)
+        x = self.convs[-1](x, edge_index,edge_weight)
         return x
 
 

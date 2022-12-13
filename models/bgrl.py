@@ -3,7 +3,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torch_geometric.nn import GCNConv
+# from torch_geometric.nn import GCNConv
 import copy
 from models.baseline_models import LogReg, MLP, GCN
 
@@ -40,9 +40,9 @@ def set_requires_grad(model, val):
 
 class BGRL(nn.Module):
 
-    def __init__(self, in_dim, hid_dim, out_dim, n_layers, pred_hid, moving_average_decay=0.99, epochs=1000):
+    def __init__(self, in_dim, hid_dim, out_dim, n_layers, pred_hid, dropout_rate, gnn_type, alpha , beta, add_self_loops, moving_average_decay=0.99, epochs=1000):
         super().__init__()
-        self.student_encoder = GCN(in_dim, hid_dim, out_dim, n_layers)
+        self.student_encoder = GCN(in_dim, hid_dim, out_dim, n_layers, dropout_rate, gnn_type, alpha , beta, add_self_loops)
         self.teacher_encoder = copy.deepcopy(self.student_encoder)
 
         set_requires_grad(self.teacher_encoder, False)
