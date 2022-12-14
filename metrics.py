@@ -21,6 +21,7 @@ from sklearn.pipeline import make_pipeline
 from collections import Counter
 from numpy.random import default_rng
 from torch_geometric.utils import to_dense_adj
+from utils.helper import deg
 
 
 def random_triplet_eval(X, X_new, num_triplets=5):
@@ -86,8 +87,10 @@ def neighbor_kept_ratio_eval(G, X_new, n_neighbors=30):
     graph_ld = nn_ld.kneighbors_graph(X_new).toarray()
     graph_ld -= np.eye(G.num_nodes) # Removing diagonal
     graph_ld = torch.tensor(graph_ld, dtype= torch.float32)
-    neighbor_kept = torch.sum(graph_hd * graph_ld)
-    neighbor_kept_ratio = neighbor_kept / n_neighbors / G.num_nodes
+    neighbor_kept = torch.sum((graph_hd * graph_ld)[0], dim = 0)
+    deg_val = deg(G.edge_index)
+    deg_val[deg_val == 0] = 1e-1
+    neighbor_kept_ratio = torch.div(neighbor_kept, deg_val).sum()/G.num_nodes
     return neighbor_kept_ratio
 
 
