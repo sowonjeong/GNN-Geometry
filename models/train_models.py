@@ -392,7 +392,7 @@ def train_cca_ssg(data,  hid_dim, channels, lambd=1e-5,
     return(model)
 
 
-def train_bgrl(data, channels, lambd=1e-5,
+def train_bgrl(data, hid_channel, channel, lambd=1e-5,
                   n_layers=2, epochs=100, lr=1e-3,
                   fmr=0.2, edr =0.5, pred_hid=512, wd=1e-5,
                   drf1=0.2, drf2=0.2, dre1=0.4, dre2=0.4, name_file="test",
@@ -402,8 +402,8 @@ def train_bgrl(data, channels, lambd=1e-5,
     if device is None:
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     in_dim = data.num_features
-    hid_dim = channels
-    out_dim = channels
+    hid_dim = hid_channel
+    out_dim = channel
     n_layers = n_layers
 
     # num_class = int(data.y.max().item()) + 1

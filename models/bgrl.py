@@ -60,19 +60,19 @@ class BGRL(nn.Module):
         update_moving_average(self.teacher_ema_updater, self.teacher_encoder, self.student_encoder)
 
     def get_embedding(self, data):
-        z = self.teacher_encoder(data.x, data.edge_index)
+        z = self.teacher_encoder(data.x.type(torch.float32), data.edge_index)
         return z.detach()
 
     def forward(self, data1, data2):
-        v1_student = self.student_encoder(data1.x, data1.edge_index, edge_weight=data1.edge_weight)
-        v2_student = self.student_encoder(data2.x, data2.edge_index, edge_weight=data2.edge_weight)
+        v1_student = self.student_encoder(data1.x.type(torch.float32), data1.edge_index, edge_weight=data1.edge_weight.type(torch.float32))
+        v2_student = self.student_encoder(data2.x.type(torch.float32), data2.edge_index, edge_weight=data2.edge_weight.type(torch.float32))
 
         v1_pred = self.student_predictor(v1_student)
         v2_pred = self.student_predictor(v2_student)
 
         with torch.no_grad():
-            v1_teacher = self.teacher_encoder(data1.x, data1.edge_index, edge_weight=data1.edge_weight)
-            v2_teacher = self.teacher_encoder(data2.x, data2.edge_index, edge_weight=data2.edge_weight)
+            v1_teacher = self.teacher_encoder(data1.x.type(torch.float32), data1.edge_index, edge_weight=data1.edge_weight.type(torch.float32))
+            v2_teacher = self.teacher_encoder(data2.x.type(torch.float32), data2.edge_index, edge_weight=data2.edge_weight.type(torch.float32))
 
         loss1 = loss_fn(v1_pred, v2_teacher.detach())
         loss2 = loss_fn(v2_pred, v1_teacher.detach())
