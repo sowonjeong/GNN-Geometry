@@ -288,8 +288,8 @@ def corr_eval_plot(dataset, out,n_points = 1000, random_seed = 1234):
     res = torch.zeros((10,3))
     for i in range(10):
         res[i,0] = alpha[i]
-        _,_,res[i,1], _ = spearman_correlation_eval(dataset.x, out[i], n_points = n_points, random_seed = random_seed)
-        _,_,res[i,2], _ = kendall_tau_correlation_eval(dataset.x, out[i], n_points = n_points, random_seed = random_seed)  
+        _,_,res[i,1], _ = spearman_correlation_eval(dataset, out[i], n_points = n_points, random_seed = random_seed)
+        _,_,res[i,2], _ = kendall_tau_correlation_eval(dataset, out[i], n_points = n_points, random_seed = random_seed)  
     df = pd.DataFrame(res) 
     df.columns = ['alpha', 'spearman','kendall_tau']
     df_unpivot = pd.melt(df, id_vars = 'alpha', value_vars = ['spearman', 'kendall_tau'])
