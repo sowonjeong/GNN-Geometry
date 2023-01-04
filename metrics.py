@@ -501,3 +501,13 @@ def eval_reduction_large(dataset_name, methods, metric=0):
             np.save(f'./results/{dataset_name}_{method}_svmaccs.npy', svm_accs)
         print('---------')
     print('Finished Successfully')
+
+def eval_density_preserve(X, X_news,prob_high_dim, prob_low_dim):
+    P = prob_high_dim(X)
+    Q = prob_low_dim(X_news)
+    p_sum = 1/torch.sum(P, dim = 1)
+    q_sum = 1/torch.sum(Q, dim = 1)
+    R_p = p_sum*torch.sum(P @ pdist(X), dim = 1)
+    R_q = q_sum*torch.sum(Q @ pdist(X_news), dim = 1)
+    corr = scipy.stats.pearsonr(R_p, R_q)
+    return corr
