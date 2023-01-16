@@ -5,7 +5,7 @@ import pandas as pd
 import seaborn as sb
 from sklearn.manifold import TSNE
 from sklearn.decomposition import PCA
-from umap import UMAP
+import umap as UMAP
 from torch_geometric.utils import to_networkx
 from torch_geometric.utils import from_networkx
 from utils.curvature import *
@@ -167,6 +167,31 @@ trial=1, loop = True, transparency =0.4, mult = 10 ):
     plt.show()
 
 
+def plot_embedding_transform_UMAP(embedding, edge_ind, experiment = 'normal',
+alpha = [0.2,0.5,0.8,1.0], name = 'Cora',
+trial=1, loop = True, transparency =0.4, mult = 10 ):
+    deg1 = deg(edge_ind)+0.01
+    # THIS MAKES A GRID and figure size as (width, height) in inches.
+    fig, axs = plt.subplots(1, 4, figsize = (23,6))
+    sb.set_theme(style="whitegrid")
+    #cmap = plt.get_cmap("Spectral")
+    norm = plt.Normalize(np.log(deg1).min(), np.log(deg1).max())
+    title = 'row-normalized' if experiment == 'diffusion' else 'symmetric'
+    for i in range(4):
+            temp = embedding[name+'_'+experiment+ '_' +str(alpha[i])+'_'+'loop'+'_'+str(loop)+'_'+str(trial)]['embedding']
+            tmp = UMAP(n_components=2).fit_transform(temp.detach().cpu().numpy())
+            _ = axs[i].set_title('UMAP plot for: '+ title +', '+ r'$\alpha$' +'=' +str(round(alpha[i],1)), fontsize = 20)
+               # _ = axs[j,i].set_xlim([-15, 25])
+               # _ = axs[j,i].set_ylim([-10, 35])
+            hs = axs[i].scatter(x = tmp[:, 0], y = tmp[:, 1], c=np.log(deg1), s=mult*deg1,  alpha = transparency,  cmap="gist_rainbow")
+
+    cbar = fig.colorbar(hs, ax=axs[3])
+    cbar.ax.set_title("log(degree)")
+
+    # Show the graph
+    fig.tight_layout()
+    plt.show()
+
 def plot_embedding_class_PCA(embedding, data, experiment = 'normal',
 alpha = [0.2,0.5,0.8,1.0], name = 'Cora', trial=1, loop = True, transparency =0.4, mult = 10, palette="Set2"):
     # out : embedding array
@@ -193,6 +218,31 @@ alpha = [0.2,0.5,0.8,1.0], name = 'Cora', trial=1, loop = True, transparency =0.
     plt.savefig(savename)
     plt.show()
 
+def plot_embedding_class_UMAP(embedding, data, experiment = 'normal',
+alpha = [0.2,0.5,0.8,1.0], name = 'Cora', trial=1, loop = True, transparency =0.4, mult = 10, palette="Set2"):
+    # out : embedding array
+    # deg : data edge_index
+    deg1 = deg(data.edge_index)+0.01
+    # THIS MAKES A GRID and figure size as (width, height) in inches.
+    fig, axs = plt.subplots(1, 4, figsize = (23,6))
+    sb.set_theme(style="whitegrid")
+    #cmap = plt.get_cmap("Spectral")
+    norm = plt.Normalize(np.log(deg1).min(), np.log(deg1).max())
+    title = 'row-normalized' if experiment == 'diffusion' else 'symmetric'
+    for i in range(4):
+            temp = embedding[name+'_'+experiment+ '_' +str(alpha[i])+'_'+'loop'+'_'+str(loop)+'_'+str(trial)]['embedding']
+            tmp = UMAP(n_components=2).fit_transform(temp.detach().cpu().numpy())
+            _ = axs[i].set_title('UMAP plot for '+ title +', '+ r'$\alpha$' +'=' +str(round(alpha[i],1)), fontsize = 20)
+               # _ = axs[j,i].set_xlim([-15, 25])
+               # _ = axs[j,i].set_ylim([-10, 35])
+            hs = axs[i].scatter(x = tmp[:, 0], y = tmp[:, 1], c=data.y, s=mult*2,  alpha = transparency,  cmap=palette)
+            #_ = axs[i // 5,i % 5].legend(loc="upper right")
+
+    # Show the graph
+    savename = name+'_embedding'+'_'+experiment+'_'+'loop'+'_'+str(loop)+'_UMAP_class'+'.png'
+    fig.tight_layout()
+    plt.savefig(savename)
+    plt.show()
 
 def plot_embedding_curvature_PCA(embedding, data, experiment = 'normal',
 alpha = [0.2,0.5,0.8,1.0], name = 'Cora', trial=1, loop = True, transparency =0.4, mult = 100):

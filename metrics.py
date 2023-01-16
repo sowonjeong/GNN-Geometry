@@ -22,7 +22,7 @@ from collections import Counter
 from numpy.random import default_rng
 from torch_geometric.utils import to_dense_adj
 from utils.helper import deg
-
+from scipy.optimize import curve_fit
 
 def random_triplet_eval(X, X_new, num_triplets=5):
     '''
@@ -502,12 +502,49 @@ def eval_reduction_large(dataset_name, methods, metric=0):
         print('---------')
     print('Finished Successfully')
 
-def eval_density_preserve(X, X_news,prob_high_dim, prob_low_dim):
-    P = prob_high_dim(X)
-    Q = prob_low_dim(X_news)
+def eval_density_preserve(X, X_news, sigma = 1.0, min_dist = 0.1):
+    P = prob_high_dim(sigma = sigma, dist = euclidean_distances(X,X))
+    _a, _b = find_ab_params(spread = sigma, min_dist = min_dist)
+    Q = prob_low_dim(_a,_b,X_news)
+    P = torch.tensor(P, dtype = torch.float)
+    Q = torch.tensor(Q, dtype = torch.float)
+    x_dist = torch.tensor(euclidean_distances(X,X), dtype = torch.float)
+    y_dist = torch.tensor(euclidean_distances(X_news,X_news), dtype = torch.float)
     p_sum = 1/torch.sum(P, dim = 1)
     q_sum = 1/torch.sum(Q, dim = 1)
-    R_p = p_sum*torch.sum(P @ pdist(X), dim = 1)
-    R_q = q_sum*torch.sum(Q @ pdist(X_news), dim = 1)
-    corr = scipy.stats.pearsonr(R_p, R_q)
+    R_p = p_sum * torch.sum(torch.mul(P,x_dist),dim = 0)
+    R_q = q_sum * torch.sum(torch.mul(Q,y_dist),dim = 0)
+    corr,_ = scipy.stats.pearsonr(R_p, R_q)
     return corr
+
+def prob_high_dim(sigma, dist):
+    """
+    For each row of Euclidean distance matrix (dist_row) compute
+    probability in high dimensions (1D array)
+    """
+    d = dist - np.min(dist); d[d < 0] = 0
+    return np.exp(- d / sigma)
+
+def prob_low_dim(a,b,Y):
+    """
+    Compute matrix of probabilities q_ij in low-dimensional space
+    """
+    inv_distances = np.power(1 + a * np.square(euclidean_distances(Y, Y))**b, -1)
+    return inv_distances
+
+def find_ab_params(spread, min_dist):
+    """Fit a, b params for the differentiable curve used in lower
+    dimensional fuzzy simplicial complex construction. We want the
+    smooth curve (from a pre-defined family with simple gradient) that
+    best matches an offset exponential decay.
+    """
+
+    def curve(x, a, b):
+        return 1.0 / (1.0 + a * x ** (2 * b))
+
+    xv = np.linspace(0, spread * 3, 300)
+    yv = np.zeros(xv.shape)
+    yv[xv < min_dist] = 1.0
+    yv[xv >= min_dist] = np.exp(-(xv[xv >= min_dist] - min_dist) / spread)
+    params, covar = curve_fit(curve, xv, yv)
+    return params[0], params[1]
