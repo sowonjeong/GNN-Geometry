@@ -29,13 +29,11 @@ The `data\` folder contains source file for:
 
 ## 3. Usage
 
-### 3-1. Training 
-
-`train.py`
-
-### 3-2. Evaluation
+* Newly defined families of operators have been implemented in `operators.py`
+* `experiments-datasets-demo.ipynb` gives a demo on how to apply these operators on node classification task. 
+* `metrics.py` for the evaluation of properties of embedding space. 
 
 ## 4. Examples
 
-All this examples are to show the effect of the type of operators in the resulting embedding space. The target task is limited to node prediction tasks. 
+All the examples are to show the effect of the type of operators in the resulting embedding space. The target task is limited to node prediction tasks. 
 
