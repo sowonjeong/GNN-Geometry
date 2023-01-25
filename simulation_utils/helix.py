@@ -92,7 +92,7 @@ def get_vhelix(uniform=True, a = 0.5, b = 0.5, seed = 1234, n_samples = 3000, n_
     return x,y, height, time, A, new_data
 
 
-def get_circles(n_samples=3000, *, shuffle=True, noise=None, random_state= 1234, factor=0.8,
+def get_circles(n_samples=3000, *, shuffle=True, noise=None, random_state= 1234, factor=0.8, ratio = 0.5, 
                 n_neighbours = 5, features = 'coordinates', standardize=True):
     """Make a large circle containing a smaller circle in 2d.
     A simple toy dataset to visualize clustering and classification
@@ -130,7 +130,7 @@ def get_circles(n_samples=3000, *, shuffle=True, noise=None, random_state= 1234,
         raise ValueError("'factor' has to be between 0 and 1.")
 
     if isinstance(n_samples, numbers.Integral):
-        n_samples_out = n_samples // 2
+        n_samples_out = round(n_samples*ratio)
         n_samples_in = n_samples - n_samples_out
     else:
         try:
@@ -176,7 +176,7 @@ def get_circles(n_samples=3000, *, shuffle=True, noise=None, random_state= 1234,
                         edge_weight=edge_weights)
     return X,c, A, new_data
 
-def get_moons(n_samples=3000, *, shuffle=True, noise=None, random_state=1234,
+def get_moons(n_samples=3000, *, shuffle=True, noise=None, random_state=1234,ratio = 0.5,
               n_neighbours = 5, features = 'coordinates', standardize=True):
     """Make two interleaving half circles.
     A simple toy dataset to visualize clustering and classification
@@ -205,7 +205,7 @@ def get_moons(n_samples=3000, *, shuffle=True, noise=None, random_state=1234,
     """
 
     if isinstance(n_samples, numbers.Integral):
-        n_samples_out = n_samples // 2
+        n_samples_out = round(n_samples*ratio)
         n_samples_in = n_samples - n_samples_out
     else:
         try:
