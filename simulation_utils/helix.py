@@ -85,10 +85,10 @@ def get_vhelix(uniform=True, a = 0.5, b = 0.5, seed = 1234, n_samples = 3000, n_
     if features == 'coordinates':
         new_data = Data(x=torch.from_numpy(X).float(),
                         edge_index=edge_index,
-                        edge_weight=edge_weights)
+                        edge_weight=torch.exp(-edge_weights))
     else:
         new_data = Data(x=torch.eye(n_samples), edge_index=edge_index,
-                        edge_weight=edge_weights)
+                        edge_weight=torch.exp(-edge_weights))
     return x,y, height, time, A, new_data
 
 
@@ -170,10 +170,10 @@ def get_circles(n_samples=3000, *, shuffle=True, noise=None, random_state= 1234,
     if features == 'coordinates':
         new_data = Data(x=torch.from_numpy(X).float(),
                         edge_index=edge_index,
-                        edge_weight=edge_weights)
+                        edge_weight=torch.exp(-edge_weights))
     else:
         new_data = Data(x=torch.eye(n_samples), edge_index=edge_index,
-                        edge_weight=edge_weights)
+                        edge_weight=torch.exp(-edge_weights))
     return X,c, A, new_data
 
 def get_moons(n_samples=3000, *, shuffle=True, noise=None, random_state=1234,ratio = 0.5,
@@ -244,8 +244,8 @@ def get_moons(n_samples=3000, *, shuffle=True, noise=None, random_state=1234,rat
     if features == 'coordinates':
         new_data = Data(x=torch.from_numpy(X).float(),
                         edge_index=edge_index,
-                        edge_weight=edge_weights)
+                        edge_weight=torch.exp(-edge_weights))
     else:
         new_data = Data(x=torch.eye(n_samples), edge_index=edge_index,
-                        edge_weight=edge_weights)
+                        edge_weight=torch.exp(-edge_weights))
     return X,c, A, new_data
